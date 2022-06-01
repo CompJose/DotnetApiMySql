@@ -8,14 +8,18 @@ namespace ApiComMysql.Controllers;
 
 public class ModeloController : ControllerBase
 {
-    private static int id = 1;
+    //inicia o contexto que irá acessar o banco
+    private readonly ModeloContext _context;
+    public ModeloController(ModeloContext context)
+    {
+        _context = context;
+    }
 
-    public static List<Modelo> modelos = new List<Modelo>();
-
+    //Recupera um modelo
     [HttpGet("{id}")]
     public IActionResult GetModelo(int id)
     {
-        Modelo modelo = modelos.FirstOrDefault(m => m.Id == id);
+        Modelo modelo = _context.Modelos.FirstOrDefault(m => m.Id == id);
         if (modelo != null)
         {
             return Ok(modelo);
@@ -23,44 +27,58 @@ public class ModeloController : ControllerBase
         return BadRequest("Modelo não encontrado");
     }
 
+    //Recupera todos os modelos
     [HttpGet("lista/")]
     public IEnumerable<Modelo> GetModelos()
     {
-        IEnumerable<Modelo> modelos1 = modelos;
+        IEnumerable<Modelo> modelos = _context.Modelos;
+
         return modelos;
     }
 
+    //Cadastra um modelo
     [HttpPost]
     public IActionResult PostModelo([FromBody] Modelo modelo)
     {
-        modelo.Id = id++;
+        if (!ModelState.IsValid)
+            return BadRequest("Não foi possível criar o modelo");
+
         modelo.DataCriacao = DateTime.Now;
-        modelos.Add(modelo);
+        _context.Modelos.Add(modelo);
+        _context.SaveChanges();
         return CreatedAtAction(nameof(GetModelo), new { id = modelo.Id }, modelo);
+
     }
 
+    //Apagar Modelo
     [HttpDelete("{id}")]
     public IActionResult DeleteModelo(int id)
     {
-        Modelo modelo = modelos.FirstOrDefault(m => m.Id == id);
+        Modelo modelo = _context.Modelos.FirstOrDefault(m => m.Id == id);
         if (modelo != null)
         {
-            modelos.Remove(modelo);
+            _context.Remove(modelo);
+            _context.SaveChanges();
             return NoContent();
         }
         return BadRequest("Não foi possível remover o item");
     }
 
+    //Atualizar modelo
     [HttpPut("{id}")]
-    public IActionResult PutModelo(int id, [FromBody] Modelo novoModelo){
+    public IActionResult PutModelo(int id, [FromBody] Modelo novoModelo)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest("Modelo Inválido");
 
-        Modelo modelo = modelos.FirstOrDefault(m => m.Id == id);
-        if (modelo != null){
-            modelo.Nome = novoModelo.Nome;
-            modelo.NomeCriador = novoModelo.NomeCriador;
-            return NoContent();
+        Modelo modelo = _context.Modelos.FirstOrDefault(m => m.Id == id);
+        if (modelo == null)
+        {
+            return BadRequest("Modelo não encontrado");
         }
-        return BadRequest("Modelo não encontrado");
-
+        modelo.Nome = novoModelo.Nome;
+        modelo.NomeCriador = novoModelo.NomeCriador;
+        _context.SaveChanges();
+        return NoContent();
     }
 }

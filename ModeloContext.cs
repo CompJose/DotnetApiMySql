@@ -16,5 +16,5 @@ public class ModeloContext : DbContext
         options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
     }
 
-    public DbSet<Modelo> Modelo { get; set; }
+    public DbSet<Modelo> Modelos { get; set; }
 }
