@@ -9,4 +9,5 @@ RUN dotnet publish -c release -o out
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app-dotnet
 COPY --from=build-env /app-dotnet/out .
-ENTRYPOINT [ "dotnet", "API.dll" ]
+ENV ASPNETCORE_URLS=http://*:5000
+ENTRYPOINT [ "dotnet", "ApiComMysql.dll" ]
